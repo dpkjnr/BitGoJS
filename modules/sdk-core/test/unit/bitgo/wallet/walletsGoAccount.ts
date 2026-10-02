@@ -37,6 +37,7 @@ describe('Wallets - GoAccount (OFC trading) wallet creation', function () {
           async ({ password, input }: { password: string; input: string }) => `encrypted:${password}:${input}`
         ),
       setRequestTracer: sinon.stub(),
+      url: sinon.stub().callsFake((path: string, version = 1) => `/api/v${version}${path}`),
     };
 
     mockBaseCoin = {

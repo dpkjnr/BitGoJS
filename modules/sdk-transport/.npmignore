@@ -1,0 +1,11 @@
+!dist/
+.idea/
+.prettierrc.yml
+tsconfig.json
+src/
+test/
+.nyc_output
+CODEOWNERS
+node_modules/
+.prettierignore
+.mocharc.js

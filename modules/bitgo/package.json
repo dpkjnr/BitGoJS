@@ -186,6 +186,8 @@
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [
     "dist",
+    "lean.js",
+    "lean.d.ts",
     "npm-shrinkwrap.json"
   ]
 }

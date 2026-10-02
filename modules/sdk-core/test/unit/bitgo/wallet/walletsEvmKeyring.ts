@@ -13,12 +13,14 @@ describe('Wallets', function () {
       post: sinon.stub(),
       encrypt: sinon.stub(),
       setRequestTracer: sinon.stub(),
+      url: sinon.stub().callsFake((path: string, version = 1) => `/api/v${version}${path}`),
     };
 
     mockBaseCoin = {
       isEVM: sinon.stub(),
       supportsTss: sinon.stub().returns(true),
       getFamily: sinon.stub().returns('eth'),
+      getChain: sinon.stub().returns('teth'),
       getDefaultMultisigType: sinon.stub(),
       keychains: sinon.stub(),
       url: sinon.stub().returns('/test/url'),

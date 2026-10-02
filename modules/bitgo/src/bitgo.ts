@@ -6,7 +6,7 @@
 import pjson = require('../package.json');
 import * as _ from 'lodash';
 
-import { BaseCoin, CoinFactory, common, UnsupportedCoinError } from '@bitgo/sdk-core';
+import { BaseCoin, CoinConstructor, CoinFactory, common, UnsupportedCoinError } from '@bitgo/sdk-core';
 import { BitGoAPI, BitGoAPIOptions } from '@bitgo/sdk-api';
 import {
   createTokenMapUsingTrimmedConfigDetails,
@@ -101,6 +101,22 @@ export class BitGo extends BitGoAPI {
       return this._coinFactory.getInstance(this, coinName);
     }
     return GlobalCoinFactory.getInstance(this, coinName);
+  }
+
+  /**
+   * Register a coin constructor with the coin factory that {@link coin} reads.
+   *
+   * BitGoAPI.register writes to @bitgo/sdk-core's global factory, which BitGo.coin() never reads,
+   * so registrations made through a BitGo instance used to have no effect.
+   * @param name coin name as registered in @bitgo/statics
+   * @param coin the coin constructor
+   */
+  register(name: string, coin: CoinConstructor): void {
+    if (this._useAms) {
+      this._coinFactory.register(name, coin);
+      return;
+    }
+    GlobalCoinFactory.register(name, coin);
   }
 
   /**

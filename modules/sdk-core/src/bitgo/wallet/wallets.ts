@@ -11,6 +11,7 @@ import { EncryptionVersion, HIGH_ENTROPY_ENCRYPTION_VERSION, IEncryptionSession,
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
+import { transportFromBitGo, WalletTransport } from '../transport';
 import { getSharedSecret } from '@bitgo/sdk-keys';
 import { MissingEncryptedKeychainError } from '../errors';
 import { AddKeychainOptions, Keychain, KeyIndices } from '../keychain';
@@ -65,10 +66,19 @@ const BULK_SHARE_BATCH_SIZE = 16;
 export class Wallets implements IWallets {
   private readonly bitgo: BitGoBase;
   private readonly baseCoin: IBaseCoin;
+  private readonly transport: WalletTransport;
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
+    this.transport = transportFromBitGo(bitgo);
+  }
+
+  /**
+   * Platform API v2 path for this coin, e.g. `/tbtc/wallet/add`.
+   */
+  private coinPath(suffix: string): string {
+    return '/' + this.baseCoin.getChain() + suffix;
   }
 
   /**
@@ -88,7 +98,11 @@ export class Wallets implements IWallets {
     if (params.skip && params.prevId) {
       throw new Error('cannot specify both skip and prevId');
     }
-    const body = (await this.bitgo.get(this.baseCoin.url('/wallet')).query(params).result()) as any;
+    const body = (await this.transport.request({
+      method: 'GET',
+      path: this.coinPath('/wallet'),
+      query: params,
+    })) as any;
     body.wallets = body.wallets.map((w) => new Wallet(this.bitgo, this.baseCoin, w));
     return body;
   }
@@ -135,10 +149,12 @@ export class Wallets implements IWallets {
         throw new Error('invalid argument for walletVersion - number expected');
       }
       if (params.multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa' && params.walletVersion === 3) {
-        const tssSettings: TssSettings = await this.bitgo
-          .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
-          .query({ enterprise: params.enterprise })
-          .result();
+        const tssSettings: TssSettings = await this.transport.request({
+          method: 'GET',
+          service: 'microservice',
+          path: '/api/v2/tss/settings',
+          query: { enterprise: params.enterprise },
+        });
         const multisigTypeVersion =
           tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
         if (multisigTypeVersion === 'MPCv2') {
@@ -167,7 +183,11 @@ export class Wallets implements IWallets {
       throw new Error('invalid argument for address - valid address string expected');
     }
 
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(params).result();
+    const newWallet = await this.transport.request({
+      method: 'POST',
+      path: this.coinPath('/wallet/add'),
+      body: params,
+    });
     return {
       wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
     };
@@ -232,7 +252,11 @@ export class Wallets implements IWallets {
       lightningProvider,
     };
 
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(walletParams).result();
+    const newWallet = await this.transport.request({
+      method: 'POST',
+      path: this.coinPath('/wallet/add'),
+      body: walletParams,
+    });
     const wallet = new Wallet(this.bitgo, this.baseCoin, newWallet);
     return {
       wallet,
@@ -287,7 +311,11 @@ export class Wallets implements IWallets {
       }),
     };
 
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(walletParams).result();
+    const newWallet = await this.transport.request({
+      method: 'POST',
+      path: this.coinPath('/wallet/add'),
+      body: walletParams,
+    });
     const wallet = new Wallet(this.bitgo, this.baseCoin, newWallet);
 
     const result: GoAccountWalletWithUserKeychain = {
@@ -596,7 +624,11 @@ export class Wallets implements IWallets {
       walletParams.keys = undefined;
       walletParams.keySignatures = undefined;
 
-      const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(walletParams).result(); // returns the ids
+      const newWallet = await this.transport.request({
+        method: 'POST',
+        path: this.coinPath('/wallet/add'),
+        body: walletParams,
+      }); // returns the ids
 
       const userKeychain = this.baseCoin.keychains().get({ id: newWallet.keys[KeyIndices.USER], reqId });
       const backupKeychain = this.baseCoin.keychains().get({ id: newWallet.keys[KeyIndices.BACKUP], reqId });
@@ -739,7 +771,11 @@ export class Wallets implements IWallets {
       }
 
       this.bitgo.setRequestTracer(reqId);
-      const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(finalWalletParams).result();
+      const newWallet = await this.transport.request({
+        method: 'POST',
+        path: this.coinPath('/wallet/add'),
+        body: finalWalletParams,
+      });
 
       const result: WalletWithKeychains = {
         wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
@@ -945,7 +981,11 @@ export class Wallets implements IWallets {
     const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
 
     this.bitgo.setRequestTracer(reqId);
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(finalWalletParams).result();
+    const newWallet = await this.transport.request({
+      method: 'POST',
+      path: this.coinPath('/wallet/add'),
+      body: finalWalletParams,
+    });
 
     return {
       wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
@@ -961,7 +1001,7 @@ export class Wallets implements IWallets {
    * @param params
    */
   async listShares(params: Record<string, unknown> = {}): Promise<any> {
-    return await this.bitgo.get(this.baseCoin.url('/walletshare')).result();
+    return await this.transport.request({ method: 'GET', path: this.coinPath('/walletshare') });
   }
 
   /**
@@ -969,7 +1009,7 @@ export class Wallets implements IWallets {
    * @returns {Promise<WalletShares>}
    */
   async listSharesV2(): Promise<WalletShares> {
-    return await this.bitgo.get(this.bitgo.url('/walletshares', 2)).result();
+    return await this.transport.request({ method: 'GET', path: '/walletshares' });
   }
 
   /**
@@ -980,7 +1020,7 @@ export class Wallets implements IWallets {
   async getShare(params: { walletShareId?: string } = {}): Promise<any> {
     common.validateParams(params, ['walletShareId'], []);
 
-    return await this.bitgo.get(this.baseCoin.url('/walletshare/' + params.walletShareId)).result();
+    return await this.transport.request({ method: 'GET', path: this.coinPath('/walletshare/' + params.walletShareId) });
   }
 
   /**
@@ -992,10 +1032,11 @@ export class Wallets implements IWallets {
   async updateShare(params: UpdateShareOptions = {}): Promise<any> {
     common.validateParams(params, ['walletShareId'], []);
 
-    return await this.bitgo
-      .post(this.baseCoin.url('/walletshare/' + params.walletShareId))
-      .send(params)
-      .result();
+    return await this.transport.request({
+      method: 'POST',
+      path: this.coinPath('/walletshare/' + params.walletShareId),
+      body: params,
+    });
   }
 
   /**
@@ -1048,7 +1089,7 @@ export class Wallets implements IWallets {
       const payloadObj = { keysForWalletShares: batch };
 
       try {
-        const result = await this.bitgo.put(this.bitgo.url('/walletshares/accept', 2)).send(payloadObj).result();
+        const result = await this.transport.request({ method: 'PUT', path: '/walletshares/accept', body: payloadObj });
 
         if (result.acceptedWalletShares && Array.isArray(result.acceptedWalletShares)) {
           results.push(...result.acceptedWalletShares);
@@ -1072,12 +1113,13 @@ export class Wallets implements IWallets {
   async bulkUpdateWalletShareRequest(
     params: BulkUpdateWalletShareOptionsRequest[]
   ): Promise<BulkUpdateWalletShareResponse> {
-    return await this.bitgo
-      .put(this.bitgo.url('/walletshares/update', 2))
-      .send({
+    return await this.transport.request({
+      method: 'PUT',
+      path: '/walletshares/update',
+      body: {
         shares: params,
-      })
-      .result();
+      },
+    });
   }
 
   /**
@@ -1089,7 +1131,7 @@ export class Wallets implements IWallets {
     common.validateParams(params, ['walletShareId'], []);
 
     const urlParts = params.walletShareId + '/resendemail';
-    return this.bitgo.post(this.baseCoin.url('/walletshare/' + urlParts)).result();
+    return this.transport.request({ method: 'POST', path: this.coinPath('/walletshare/' + urlParts) });
   }
 
   /**
@@ -1100,10 +1142,10 @@ export class Wallets implements IWallets {
   async cancelShare(params: { walletShareId?: string } = {}): Promise<any> {
     common.validateParams(params, ['walletShareId'], []);
 
-    return await this.bitgo
-      .del(this.baseCoin.url('/walletshare/' + params.walletShareId))
-      .send()
-      .result();
+    return await this.transport.request({
+      method: 'DELETE',
+      path: this.coinPath('/walletshare/' + params.walletShareId),
+    });
   }
 
   /**
@@ -1121,9 +1163,11 @@ export class Wallets implements IWallets {
       throw new Error('Enterprise not found for the wallet');
     }
 
-    const enterpriseUsersResponse = await this.bitgo
-      .get(this.bitgo.url(`/enterprise/${wallet?._wallet?.enterprise}/user`))
-      .result();
+    const enterpriseUsersResponse = await this.transport.request({
+      method: 'GET',
+      path: `/enterprise/${wallet?._wallet?.enterprise}/user`,
+      version: 1,
+    });
     // create a map of users for easy lookup - we need the user email id to share the wallet
     const usersMap = new Map(
       [...enterpriseUsersResponse?.adminUsers, ...enterpriseUsersResponse?.nonAdminUsers].map((obj) => [obj.id, obj])
@@ -1805,10 +1849,11 @@ export class Wallets implements IWallets {
 
     this.bitgo.setRequestTracer(params.reqId || new RequestTracer());
 
-    const wallet = await this.bitgo
-      .get(this.baseCoin.url('/wallet/' + params.id))
-      .query(query)
-      .result();
+    const wallet = await this.transport.request({
+      method: 'GET',
+      path: this.coinPath('/wallet/' + params.id),
+      query: query,
+    });
     return new Wallet(this.bitgo, this.baseCoin, wallet);
   }
 
@@ -1823,7 +1868,10 @@ export class Wallets implements IWallets {
 
     this.bitgo.setRequestTracer(params.reqId || new RequestTracer());
 
-    const wallet = await this.bitgo.get(this.baseCoin.url('/wallet/address/' + params.address)).result();
+    const wallet = await this.transport.request({
+      method: 'GET',
+      path: this.coinPath('/wallet/address/' + params.address),
+    });
     return new Wallet(this.bitgo, this.baseCoin, wallet);
   }
 
@@ -1834,7 +1882,7 @@ export class Wallets implements IWallets {
    * @returns {*}
    */
   async getTotalBalances(params: Record<string, never> = {}): Promise<any> {
-    return await this.bitgo.get(this.baseCoin.url('/wallet/balances')).result();
+    return await this.transport.request({ method: 'GET', path: this.coinPath('/wallet/balances') });
   }
 
   /**
@@ -1889,10 +1937,12 @@ export class Wallets implements IWallets {
       if (!params.ecdsaMPCv2Callbacks) {
         throw new Error('ecdsaMPCv2Callbacks is required for ECDSA TSS wallet generation with external signer');
       }
-      const tssSettings: TssSettings = await this.bitgo
-        .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
-        .query({ enterprise })
-        .result();
+      const tssSettings: TssSettings = await this.transport.request({
+        method: 'GET',
+        service: 'microservice',
+        path: '/api/v2/tss/settings',
+        query: { enterprise },
+      });
       const multisigTypeVersion =
         tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
       walletVersion = this.determineEcdsaMpcWalletVersion(walletVersion, multisigTypeVersion);
@@ -1938,7 +1988,11 @@ export class Wallets implements IWallets {
     this.bitgo.setRequestTracer(reqId);
 
     const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(finalWalletParams).result();
+    const newWallet = await this.transport.request({
+      method: 'POST',
+      path: this.coinPath('/wallet/add'),
+      body: finalWalletParams,
+    });
 
     return {
       wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
@@ -1965,10 +2019,12 @@ export class Wallets implements IWallets {
     encryptionVersion,
   }: GenerateMpcWalletOptions): Promise<WalletWithKeychains> {
     if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
-      const tssSettings: TssSettings = await this.bitgo
-        .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
-        .query({ enterprise })
-        .result();
+      const tssSettings: TssSettings = await this.transport.request({
+        method: 'GET',
+        service: 'microservice',
+        path: '/api/v2/tss/settings',
+        query: { enterprise },
+      });
       const multisigTypeVersion =
         tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
       walletVersion = this.determineEcdsaMpcWalletVersion(walletVersion, multisigTypeVersion);
@@ -2000,7 +2056,11 @@ export class Wallets implements IWallets {
       walletVersion,
     };
     const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(finalWalletParams).result();
+    const newWallet = await this.transport.request({
+      method: 'POST',
+      path: this.coinPath('/wallet/add'),
+      body: finalWalletParams,
+    });
 
     const result: WalletWithKeychains = {
       wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
@@ -2036,10 +2096,12 @@ export class Wallets implements IWallets {
 
     let multisigTypeVersion: 'MPCv2' | undefined;
     if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
-      const tssSettings: TssSettings = await this.bitgo
-        .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
-        .query({ enterprise })
-        .result();
+      const tssSettings: TssSettings = await this.transport.request({
+        method: 'GET',
+        service: 'microservice',
+        path: '/api/v2/tss/settings',
+        query: { enterprise },
+      });
       multisigTypeVersion =
         tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.coldMultiSigTypeVersion;
       walletVersion = this.determineEcdsaMpcWalletVersion(walletVersion, multisigTypeVersion);
@@ -2097,7 +2159,11 @@ export class Wallets implements IWallets {
     };
 
     const finalWalletParams = await this.baseCoin.supplementGenerateWallet(walletParams, keychains);
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(finalWalletParams).result();
+    const newWallet = await this.transport.request({
+      method: 'POST',
+      path: this.coinPath('/wallet/add'),
+      body: finalWalletParams,
+    });
 
     const result: WalletWithKeychains = {
       wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
@@ -2126,10 +2192,12 @@ export class Wallets implements IWallets {
     this.bitgo.setRequestTracer(reqId);
 
     if (multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa') {
-      const tssSettings: TssSettings = await this.bitgo
-        .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
-        .query({ enterprise })
-        .result();
+      const tssSettings: TssSettings = await this.transport.request({
+        method: 'GET',
+        service: 'microservice',
+        path: '/api/v2/tss/settings',
+        query: { enterprise },
+      });
       const multisigTypeVersion =
         tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.custodialMultiSigTypeVersion;
       walletVersion = this.determineEcdsaMpcWalletVersion(walletVersion, multisigTypeVersion);
@@ -2145,7 +2213,11 @@ export class Wallets implements IWallets {
     };
 
     // Create Wallet
-    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(finalWalletParams).result();
+    const newWallet = await this.transport.request({
+      method: 'POST',
+      path: this.coinPath('/wallet/add'),
+      body: finalWalletParams,
+    });
     const wallet = new Wallet(this.bitgo, this.baseCoin, newWallet);
     const keychains = wallet.keyIds();
     const result: WalletWithKeychains = {

@@ -293,6 +293,9 @@
       "path": "./modules/sdk-keys"
     },
     {
+      "path": "./modules/sdk-transport"
+    },
+    {
       "path": "./modules/sdk-lib-safes"
     },
     {
