@@ -1,0 +1,49 @@
+{
+  "name": "@bitgo/sdk-wallet",
+  "version": "1.0.0",
+  "description": "Slim BitGo wallet core: create, get, sign and send over a WalletTransport",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "test": "yarn unit-test",
+    "unit-test": "mocha --recursive test",
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-wallet"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@bitgo/public-types": "6.79.0",
+    "@bitgo/sdk-keys": "^1.0.0",
+    "@bitgo/sdk-transport": "^1.0.0",
+    "io-ts": "npm:@bitgo-forks/io-ts@2.1.4"
+  },
+  "devDependencies": {
+    "@types/mocha": "^9.1.0",
+    "@types/node": "^24.10.9",
+    "mocha": "10.6.0",
+    "should": "^13.1.3",
+    "tsx": "^4.20.4"
+  },
+  "files": [
+    "dist"
+  ]
+}
