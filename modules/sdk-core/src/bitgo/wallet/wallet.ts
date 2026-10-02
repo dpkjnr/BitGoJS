@@ -23,7 +23,7 @@ import {
 } from '../baseCoin';
 import { makeRandomKey } from '../bitcoin';
 import { BitGoBase } from '../bitgoBase';
-import { getSharedSecret } from '../ecdh';
+import { decodeWithCodec, getSharedSecret } from '@bitgo/sdk-keys';
 import {
   AddressGenerationError,
   IncorrectPasswordError,
@@ -53,7 +53,6 @@ import {
   TokenType,
   TxRequest,
 } from '../utils';
-import { decodeWithCodec } from '../utils/codecs';
 import { postWithCodec } from '../utils/postWithCodec';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { EddsaMPCv2Utils } from '../utils/tss/eddsa';

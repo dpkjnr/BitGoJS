@@ -10,12 +10,8 @@ import {
   hexToBigInt,
   bigIntToBufferBE,
 } from '@bitgo/sdk-lib-mpc';
-import { Ecdsa } from '../../../../../../src/account-lib/mpc/tss';
-import {
-  PublicUTShare,
-  PublicVAShareWithProofs,
-  SignCombineRT,
-} from '../../../../../../src/account-lib/mpc/tss/ecdsa/types';
+import { Ecdsa } from '../../../../../src/mpc/tss';
+import { PublicUTShare, PublicVAShareWithProofs, SignCombineRT } from '../../../../../src/mpc/tss/ecdsa/types';
 import { paillierKeyPairs } from './fixtures';
 import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
 

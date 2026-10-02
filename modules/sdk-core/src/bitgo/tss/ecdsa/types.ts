@@ -1,4 +1,4 @@
-import { ECDSA } from './../../../account-lib/mpc/tss';
+import { ECDSA } from '@bitgo/sdk-keys';
 
 export type NShare = ECDSA.NShare;
 export type KeyShare = ECDSA.KeyShare;

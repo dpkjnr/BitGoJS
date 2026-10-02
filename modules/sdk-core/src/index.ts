@@ -42,7 +42,7 @@ export {
   EddsaMPCv2RecoveryFunctions,
 } from './bitgo/utils/tss/eddsa/eddsaMPCv2';
 export { verifyEddsaTssWalletAddress, verifyMPCWalletAddress } from './bitgo/utils/tss/addressVerification';
-export { GShare, SignShare, YShare } from './account-lib/mpc/tss/eddsa/types';
+export { GShare, SignShare, YShare } from '@bitgo/sdk-keys';
 export { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage } from './bitgo/tss/types';
 export { SShare } from './bitgo/tss/ecdsa/types';
 import * as common from './common';

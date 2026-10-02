@@ -6,7 +6,7 @@ import { Hash } from 'crypto';
 import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt, minModulusBitLength } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/utxo-lib';
 
-import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
+import { ECDSA, Ecdsa, signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '@bitgo/sdk-keys';
 import { AddKeychainOptions, Keychain, KeyType, WebauthnKeyEncryptionInfo } from '../../../keychain';
 import ECDSAMethods, { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { KeychainsTriplet } from '../../../baseCoin';
@@ -40,7 +40,6 @@ import { createShareProof, generateGPGKeyPair, getBitgoGpgPubKey } from '../../o
 import { BitGoBase } from '../../../bitgoBase';
 import { InvalidTransactionError } from '../../../errors';
 import { verifyWalletSignature } from '../../../tss/ecdsa/ecdsa';
-import { signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '../../../ecdh';
 import { getTxRequestChallenge } from '../../../tss/common';
 import {
   ShareKeyPosition,

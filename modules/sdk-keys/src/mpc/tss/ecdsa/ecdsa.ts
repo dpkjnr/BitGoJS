@@ -2,7 +2,7 @@ import * as paillierBigint from 'paillier-bigint';
 import * as bigintCryptoUtils from 'bigint-crypto-utils';
 import { secp256k1 as secp } from '@noble/curves/secp256k1';
 import { createHash, Hash, randomBytes } from 'crypto';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import {

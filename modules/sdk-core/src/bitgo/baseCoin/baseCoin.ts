@@ -9,7 +9,7 @@ import { BigNumber } from 'bignumber.js';
 import { BaseCoin as StaticsBaseCoin, CoinFeature } from '@bitgo/statics';
 
 import { InitiateRecoveryOptions } from '../recovery';
-import { signMessage } from '../bip32util';
+import { signMessage } from '@bitgo/sdk-keys';
 import { NotImplementedError } from '../../account-lib';
 import { BitGoBase } from '../bitgoBase';
 import { Enterprises } from '../enterprise';

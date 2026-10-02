@@ -1,7 +1,7 @@
 import assert from 'assert';
 import openpgp from 'openpgp';
 import sodium from 'libsodium-wrappers-sumo';
-import Eddsa, { GShare, JShare, KeyShare, PShare, RShare, SignShare, YShare } from './../../../account-lib/mpc/tss';
+import { Eddsa, GShare, JShare, KeyShare, PShare, RShare, SignShare, YShare } from '@bitgo/sdk-keys';
 import { BitGoBase } from '../../bitgoBase';
 import {
   DecryptableYShare,

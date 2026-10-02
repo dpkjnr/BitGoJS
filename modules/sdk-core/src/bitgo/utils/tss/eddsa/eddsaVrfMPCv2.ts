@@ -20,7 +20,7 @@ import type { EncryptionVersion } from '../../../../api';
 import { generateGPGKeyPair } from '../../opengpgUtils';
 import type { WebauthnKeyEncryptionInfo } from '../../../keychain';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoEddsaMpcv2PubKey } from '../../../tss/bitgoPubKeys';
-import { base64String, boundedInt, decodeWithCodec } from '../../codecs';
+import { base64String, boundedInt, decodeWithCodec } from '@bitgo/sdk-keys';
 import { EddsaMPCv2Utils } from './eddsaMPCv2';
 import {
   EddsaMPCv2DeriveKeySendFn,

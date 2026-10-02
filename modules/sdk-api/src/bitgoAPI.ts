@@ -43,8 +43,7 @@ import {
   toBitgoRequest,
   verifyResponseAsync,
 } from './api';
-import { decrypt, encrypt } from './encrypt';
-import { createEncryptionSession } from './encryptionSession';
+import { createEncryptionSession, decrypt, encrypt } from '@bitgo/sdk-keys';
 import { verifyAddress } from './v1/verifyAddress';
 import {
   AccessTokenOptions,

@@ -11,7 +11,7 @@ import { BitGoBase } from '../bitgoBase';
 import { IncorrectPasswordError } from '../errors';
 import { decryptKeychainPrivateKey } from '../keychain';
 import { ECDSAUtils, parseSafeMpcKeyEnvelopes, EDDSAUtils } from '../utils';
-import { boundedInt, decodeWithCodec } from '../utils/codecs';
+import { boundedInt, decodeWithCodec } from '@bitgo/sdk-keys';
 import { postWithCodec } from '../utils/postWithCodec';
 import { Wallet } from '../wallet';
 import { InvalidRootKeychainSourceError } from '../wallet/safeKeychain';

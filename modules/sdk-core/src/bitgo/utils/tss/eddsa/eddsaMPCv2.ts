@@ -26,7 +26,7 @@ import {
 } from '../../../keychain';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoEddsaMpcv2PubKey } from '../../../tss/bitgoPubKeys';
 import { getBitgoSignatureShare, getTxRequest, sendSignatureShareV2, sendTxRequest } from '../../../tss/common';
-import { decodeWithCodec } from '../../codecs';
+import { decodeWithCodec } from '@bitgo/sdk-keys';
 import {
   getSignatureShareRoundOne,
   getSignatureShareRoundTwo,

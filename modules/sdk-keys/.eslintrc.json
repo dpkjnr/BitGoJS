@@ -1,0 +1,35 @@
+{
+  "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          "child_process",
+          "dgram",
+          "dns",
+          "http",
+          "http2",
+          "https",
+          "net",
+          "tls",
+          "@bitgo/sdk-api",
+          "@bitgo/sdk-core",
+          "@bitgo/blockapis",
+          "@bitgo/statics",
+          "@bitgo/utxo-lib",
+          "axios",
+          "cross-fetch",
+          "got",
+          "isomorphic-fetch",
+          "node-fetch",
+          "proxy-agent",
+          "request",
+          "superagent",
+          "undici",
+          "ws"
+        ],
+        "patterns": ["node:child_process", "node:dgram", "node:dns", "node:http*", "node:net", "node:tls"]
+      }
+    ]
+  }
+}

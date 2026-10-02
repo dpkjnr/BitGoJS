@@ -11,7 +11,7 @@ import { EncryptionVersion, HIGH_ENTROPY_ENCRYPTION_VERSION, IEncryptionSession,
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
-import { getSharedSecret } from '../ecdh';
+import { getSharedSecret } from '@bitgo/sdk-keys';
 import { MissingEncryptedKeychainError } from '../errors';
 import { AddKeychainOptions, Keychain, KeyIndices } from '../keychain';
 import { decodeOrElse, ECDSAUtils, EDDSAUtils, promiseProps, RequestTracer } from '../utils';

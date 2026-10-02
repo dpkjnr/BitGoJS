@@ -3,7 +3,7 @@
  */
 import assert from 'assert';
 import * as openpgp from 'openpgp';
-import Eddsa, { GShare, SignShare } from '../../../../account-lib/mpc/tss';
+import { Eddsa, GShare, SignShare } from '@bitgo/sdk-keys';
 import { AddKeychainOptions, CreateBackupOptions, Keychain, WebauthnKeyEncryptionInfo } from '../../../keychain';
 import { verifyWalletSignature } from '../../../tss/eddsa/eddsa';
 import { createShareProof, encryptText, generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';

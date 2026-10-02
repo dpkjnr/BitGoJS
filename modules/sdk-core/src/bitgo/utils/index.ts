@@ -7,7 +7,7 @@ export * from './promise-utils';
 export * from './triple';
 export * from './tss';
 export * from './util';
-export * from './codecs';
+export { base64String, boundedInt, decodeWithCodec } from '@bitgo/sdk-keys';
 export * from './decode';
 export * from './notEmpty';
 export * from './wallet';

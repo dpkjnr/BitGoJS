@@ -2,7 +2,7 @@ import { Key } from 'openpgp';
 
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 
-import { ECDSA } from '../../../../account-lib/mpc/tss';
+import { ECDSA } from '@bitgo/sdk-keys';
 import { ECDSAMethodTypes } from '../../../tss/ecdsa';
 import { BackupKeyShare, CreateKeychainParamsBase, BackupGpgKey } from '../baseTypes';
 

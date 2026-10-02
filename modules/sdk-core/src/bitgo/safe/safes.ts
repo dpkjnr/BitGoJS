@@ -16,7 +16,7 @@ import {
 } from '@bitgo/public-types';
 import { BitGoBase } from '../bitgoBase';
 import { ApiResponseError } from '../errors';
-import { decodeWithCodec } from '../utils/codecs';
+import { decodeWithCodec } from '@bitgo/sdk-keys';
 import { isDerivableEd25519Pub } from '@bitgo/sdk-lib-safes';
 import { postWithCodec } from '../utils/postWithCodec';
 import { FinalizeSafeOptions, InitializeSafeOptions } from './iSafe';

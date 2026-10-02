@@ -1,5 +1,4 @@
-import { UShare, YShare } from './../../../account-lib/mpc/tss';
-import { EDDSA } from './../../../account-lib/mpc/tss/eddsa';
+import { EDDSA, UShare, YShare } from '@bitgo/sdk-keys';
 
 // YShare that has been encrypted and signed via GPG
 export type EncryptedYShare = {

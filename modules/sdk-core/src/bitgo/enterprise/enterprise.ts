@@ -10,7 +10,7 @@ import { ListWalletOptions, Wallet } from '../wallet';
 import { Safes } from '../safe';
 import { BitGoProofSignatures, EcdsaUtils, SerializedNtildeWithVerifiers } from '../utils/tss/ecdsa';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
-import { verifyEcdhSignature } from '../ecdh';
+import { verifyEcdhSignature } from '@bitgo/sdk-keys';
 import { Buffer } from 'buffer';
 import { EcdhDerivedKeypair } from '../keychain';
 

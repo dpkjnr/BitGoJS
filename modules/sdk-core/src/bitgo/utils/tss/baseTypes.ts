@@ -3,8 +3,7 @@ import { EncryptionVersion, IEncryptionSession, IRequestTracer } from '../../../
 import { type ITransactionRecipient, KeychainsTriplet, ParsedTransaction, TransactionParams } from '../../baseCoin';
 import { ApiKeyShare, Keychain, WebauthnKeyEncryptionInfo } from '../../keychain';
 import { ApiVersion, Memo, WalletType, type PrebuildTransactionFeeInfo } from '../../wallet';
-import { EDDSA, GShare, Signature, SignShare } from '../../../account-lib/mpc/tss';
-import { Signature as EcdsaSignature } from '../../../account-lib/mpc/tss/ecdsa/types';
+import { ECDSA, EDDSA, GShare, Signature, SignShare } from '@bitgo/sdk-keys';
 import { KeyShare } from './ecdsa';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage, TxRequestChallengeResponse } from '../../tss/types';
@@ -878,7 +877,7 @@ interface SignatureShare {
 
 interface Ovc {
   eddsaSignature: Signature;
-  ecdsaSignature?: EcdsaSignature;
+  ecdsaSignature?: ECDSA.Signature;
   eddsaMpcv2Signature?: string; // raw 64-byte Ed25519 signature, hex-encoded (OVC 5-pass output)
 }
 

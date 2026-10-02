@@ -43,7 +43,7 @@ import {
 } from '../../../../../../src/bitgo/tss/eddsa/eddsaMPCv2';
 import { getInitializedMpcInstance } from '../../../../../../src/bitgo/tss/eddsa/eddsa';
 import { getBitgoSignatureShare } from '../../../../../../src/bitgo/tss/common';
-import { decodeWithCodec } from '../../../../../../src/bitgo/utils/codecs';
+import { decodeWithCodec } from '@bitgo/sdk-keys';
 import { generateGPGKeyPair } from '../../../../../../src/bitgo/utils/opengpgUtils';
 import { MPCv2PartiesEnum } from '../../../../../../src/bitgo/utils/tss/ecdsa/typesMPCv2';
 import { isV2Envelope } from '../../../../../../src/bitgo/utils/tss/baseTypes';

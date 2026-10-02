@@ -1,4 +1,4 @@
-import { EDDSA } from '../../../../account-lib/mpc/tss';
+import { EDDSA } from '@bitgo/sdk-keys';
 import BaseTSSUtils from '../baseTSSUtils';
 import { CreateKeychainParamsBase, UnsignedTransactionTss } from '../baseTypes';
 import { SerializedKeyPair } from 'openpgp';

@@ -43,21 +43,22 @@ COPY --from=builder /tmp/bitgo/modules/express /var/bitgo-express/
 #COPY_START
 COPY --from=builder /tmp/bitgo/modules/abstract-lightning /var/modules/abstract-lightning/
 COPY --from=builder /tmp/bitgo/modules/sdk-core /var/modules/sdk-core/
+COPY --from=builder /tmp/bitgo/modules/sdk-keys /var/modules/sdk-keys/
+COPY --from=builder /tmp/bitgo/modules/argon2 /var/modules/argon2/
 COPY --from=builder /tmp/bitgo/modules/sdk-lib-mpc /var/modules/sdk-lib-mpc/
 COPY --from=builder /tmp/bitgo/modules/sdk-opensslbytes /var/modules/sdk-opensslbytes/
 COPY --from=builder /tmp/bitgo/modules/sjcl /var/modules/sjcl/
+COPY --from=builder /tmp/bitgo/modules/secp256k1 /var/modules/secp256k1/
 COPY --from=builder /tmp/bitgo/modules/sdk-lib-safes /var/modules/sdk-lib-safes/
 COPY --from=builder /tmp/bitgo/modules/statics /var/modules/statics/
 COPY --from=builder /tmp/bitgo/modules/utxo-lib /var/modules/utxo-lib/
 COPY --from=builder /tmp/bitgo/modules/blake2b /var/modules/blake2b/
 COPY --from=builder /tmp/bitgo/modules/blake2b-wasm /var/modules/blake2b-wasm/
-COPY --from=builder /tmp/bitgo/modules/secp256k1 /var/modules/secp256k1/
 COPY --from=builder /tmp/bitgo/modules/logger /var/modules/logger/
 COPY --from=builder /tmp/bitgo/modules/bitgo /var/modules/bitgo/
 COPY --from=builder /tmp/bitgo/modules/abstract-utxo /var/modules/abstract-utxo/
 COPY --from=builder /tmp/bitgo/modules/blockapis /var/modules/blockapis/
 COPY --from=builder /tmp/bitgo/modules/sdk-api /var/modules/sdk-api/
-COPY --from=builder /tmp/bitgo/modules/argon2 /var/modules/argon2/
 COPY --from=builder /tmp/bitgo/modules/sdk-hmac /var/modules/sdk-hmac/
 COPY --from=builder /tmp/bitgo/modules/unspents /var/modules/unspents/
 COPY --from=builder /tmp/bitgo/modules/utxo-core /var/modules/utxo-core/
@@ -149,21 +150,22 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-zec /var/modules/sdk-coin-zec/
 
 RUN cd /var/modules/abstract-lightning && yarn link && \
 cd /var/modules/sdk-core && yarn link && \
+cd /var/modules/sdk-keys && yarn link && \
+cd /var/modules/argon2 && yarn link && \
 cd /var/modules/sdk-lib-mpc && yarn link && \
 cd /var/modules/sdk-opensslbytes && yarn link && \
 cd /var/modules/sjcl && yarn link && \
+cd /var/modules/secp256k1 && yarn link && \
 cd /var/modules/sdk-lib-safes && yarn link && \
 cd /var/modules/statics && yarn link && \
 cd /var/modules/utxo-lib && yarn link && \
 cd /var/modules/blake2b && yarn link && \
 cd /var/modules/blake2b-wasm && yarn link && \
-cd /var/modules/secp256k1 && yarn link && \
 cd /var/modules/logger && yarn link && \
 cd /var/modules/bitgo && yarn link && \
 cd /var/modules/abstract-utxo && yarn link && \
 cd /var/modules/blockapis && yarn link && \
 cd /var/modules/sdk-api && yarn link && \
-cd /var/modules/argon2 && yarn link && \
 cd /var/modules/sdk-hmac && yarn link && \
 cd /var/modules/unspents && yarn link && \
 cd /var/modules/utxo-core && yarn link && \
@@ -258,21 +260,22 @@ cd /var/modules/sdk-coin-zec && yarn link
 RUN cd /var/bitgo-express && \
     yarn link @bitgo/abstract-lightning && \
     yarn link @bitgo/sdk-core && \
+    yarn link @bitgo/sdk-keys && \
+    yarn link @bitgo/argon2 && \
     yarn link @bitgo/sdk-lib-mpc && \
     yarn link @bitgo/sdk-opensslbytes && \
     yarn link @bitgo/sjcl && \
+    yarn link @bitgo/secp256k1 && \
     yarn link @bitgo/sdk-lib-safes && \
     yarn link @bitgo/statics && \
     yarn link @bitgo/utxo-lib && \
     yarn link @bitgo/blake2b && \
     yarn link @bitgo/blake2b-wasm && \
-    yarn link @bitgo/secp256k1 && \
     yarn link @bitgo/logger && \
     yarn link bitgo && \
     yarn link @bitgo/abstract-utxo && \
     yarn link @bitgo/blockapis && \
     yarn link @bitgo/sdk-api && \
-    yarn link @bitgo/argon2 && \
     yarn link @bitgo/sdk-hmac && \
     yarn link @bitgo/unspents && \
     yarn link @bitgo/utxo-core && \
