@@ -57,6 +57,7 @@ describe('Wallets - external signer onchain wallet generation', function () {
     mockBitGo = {
       post: sinon.stub().returns({ send: sendStub }),
       setRequestTracer: sinon.stub(),
+      url: sinon.stub().callsFake((path: string, version = 1) => `/api/v${version}${path}`),
     };
 
     mockBaseCoin = {
@@ -369,6 +370,7 @@ describe('Wallets - external signer onchain wallet generation', function () {
           .stub()
           .returns({ query: sinon.stub().returnsThis(), result: sinon.stub().resolves({ coinSettings: {} }) }),
         setRequestTracer: sinon.stub(),
+        url: sinon.stub().callsFake((path: string, version = 1) => `/api/v${version}${path}`),
         microservicesUrl: sinon.stub().returns('/api/v2/tss/settings'),
       };
 
@@ -552,6 +554,7 @@ describe('Wallets - external signer onchain wallet generation', function () {
             .stub()
             .returns({ query: sinon.stub().returnsThis(), result: sinon.stub().resolves({ coinSettings: {} }) }),
           setRequestTracer: sinon.stub(),
+          url: sinon.stub().callsFake((path: string, version = 1) => `/api/v${version}${path}`),
           microservicesUrl: sinon.stub().returns('/api/v2/tss/settings'),
           ...bitgoOverrides,
         };
@@ -667,6 +670,7 @@ describe('Wallets - external signer onchain wallet generation', function () {
           send: sinon.stub().returns({ result: sinon.stub().resolves({ id: 'eddsa-wallet-id' }) }),
         }),
         setRequestTracer: sinon.stub(),
+        url: sinon.stub().callsFake((path: string, version = 1) => `/api/v${version}${path}`),
       };
 
       eddsaMockBaseCoin = {
