@@ -1,4 +1,5 @@
 import * as sinon from 'sinon';
+import { createRecordingTransport } from '@bitgo/sdk-transport';
 import 'should';
 import { Keychains, decodeDerivableEd25519Pub } from '../../../../src';
 import type { IEncryptionSession } from '../../../../src/api';
@@ -26,7 +27,7 @@ describe('Keychains.createBackup', function () {
 
   function buildKeychains(pub = STRKEY_PUB): Keychains {
     const mockBaseCoin = {
-      url: sinon.stub().callsFake((path: string) => path),
+      getChain: () => 'txlm',
       generateKeyPair: sinon.stub().returns({ pub, prv: 'SOME_SEED' }),
     };
     return new Keychains(mockBitGo, mockBaseCoin as any);
@@ -36,6 +37,7 @@ describe('Keychains.createBackup', function () {
     send = sinon.stub().returns({ result: sinon.stub().resolves({ id: 'backup-key-id' }) });
     mockBitGo = {
       post: sinon.stub().returns({ send }),
+      url: (path: string) => path,
       encrypt: sinon.stub().resolves('encrypted-prv'),
       setRequestTracer: sinon.stub(),
     };
@@ -451,19 +453,14 @@ describe('Keychains.updatePassword (safe mode)', function () {
 
 describe('Keychains.list safeId filter', function () {
   it('forwards safeId as a query parameter', async function () {
-    const query = sinon.stub();
-    const chain = { query, result: sinon.stub().resolves({ keys: [] }) };
-    query.returns(chain);
-    // BitGoBase and IBaseCoin are large surfaces; the tests only exercise these members.
-    const get = sinon.stub().returns(chain);
-    // BitGoBase and IBaseCoin are large surfaces; the tests only exercise these members.
-    const bitgo = { get } as unknown as BitGoBase;
-    const baseCoin = { url: sinon.stub().callsFake((path: string) => path) } as unknown as IBaseCoin;
-    const listKeychains = new Keychains(bitgo, baseCoin);
+    const transport = createRecordingTransport(() => ({ keys: [] }));
+    // The transport handles HTTP, so the client is never called.
+    const bitgo = {} as unknown as BitGoBase;
+    const baseCoin = { getChain: () => 'tbtc' } as unknown as IBaseCoin;
+    const listKeychains = new Keychains(bitgo, baseCoin, transport);
 
     await listKeychains.list({ safeId: 'safe-123' });
 
-    sinon.assert.calledWith(get, '/key');
-    sinon.assert.calledWith(query, { safeId: 'safe-123' });
+    transport.requests.should.deepEqual([{ method: 'GET', path: '/tbtc/key', query: { safeId: 'safe-123' } }]);
   });
 });

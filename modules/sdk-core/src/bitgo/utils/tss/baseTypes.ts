@@ -3,12 +3,25 @@ import { EncryptionVersion, IEncryptionSession, IRequestTracer } from '../../../
 import { type ITransactionRecipient, KeychainsTriplet, ParsedTransaction, TransactionParams } from '../../baseCoin';
 import { ApiKeyShare, Keychain, WebauthnKeyEncryptionInfo } from '../../keychain';
 import { ApiVersion, Memo, WalletType, type PrebuildTransactionFeeInfo } from '../../wallet';
-import { ECDSA, EDDSA, GShare, Signature, SignShare } from '@bitgo/sdk-keys';
 import { KeyShare } from './ecdsa';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage, TxRequestChallengeResponse } from '../../tss/types';
 import { AShare, DShare, SShare } from '../../tss/ecdsa/types';
 import { MessageStandardType } from '../messageTypes';
+import {
+  ECDSA,
+  EDDSA,
+  GShare,
+  Signature,
+  SignShare,
+  SignatureShareType,
+  SignatureShareRecord,
+  CommitmentType,
+  CommitmentShareRecord,
+  ExchangeCommitmentResponse,
+  EncryptedSignerShareType,
+  EncryptedSignerShareRecord,
+} from '@bitgo/sdk-keys';
 
 export type TxRequestVersion = 'full' | 'lite';
 export interface HopParams {
@@ -651,51 +664,15 @@ export function isV2Envelope(ciphertext: string): boolean {
   }
 }
 
-export const SignatureShareType = {
-  USER: 'user',
-  BACKUP: 'backup',
-  BITGO: 'bitgo',
-} as const;
-
-export type SignatureShareType = (typeof SignatureShareType)[keyof typeof SignatureShareType];
-
-interface ShareBaseRecord {
-  from: SignatureShareType;
-  to: SignatureShareType;
-  share: string;
-}
-
-export interface SignatureShareRecord extends ShareBaseRecord {
-  vssProof?: string;
-  privateShareProof?: string;
-  publicShare?: string;
-}
-
-export const CommitmentType = {
-  COMMITMENT: 'commitment',
-  DECOMMITMENT: 'decommitment',
-} as const;
-
-export type CommitmentType = (typeof CommitmentType)[keyof typeof CommitmentType];
-
-export interface CommitmentShareRecord extends ShareBaseRecord {
-  type: CommitmentType;
-}
-
-export interface ExchangeCommitmentResponse {
-  commitmentShare: CommitmentShareRecord;
-}
-
-export const EncryptedSignerShareType = {
-  ENCRYPTED_SIGNER_SHARE: 'encryptedSignerShare',
-  ENCRYPTED_R_SHARE: 'encryptedRShare',
-} as const;
-
-export type EncryptedSignerShareType = (typeof EncryptedSignerShareType)[keyof typeof EncryptedSignerShareType];
-
-export interface EncryptedSignerShareRecord extends ShareBaseRecord {
-  type: EncryptedSignerShareType;
-}
+export {
+  SignatureShareType,
+  SignatureShareRecord,
+  CommitmentType,
+  CommitmentShareRecord,
+  ExchangeCommitmentResponse,
+  EncryptedSignerShareType,
+  EncryptedSignerShareRecord,
+};
 
 export type BitgoPubKeyType = 'nitro' | 'onprem';
 

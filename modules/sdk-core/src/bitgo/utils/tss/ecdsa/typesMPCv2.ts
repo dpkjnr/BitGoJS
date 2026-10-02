@@ -14,11 +14,7 @@ import {
   MPCv2KeyGenRound3Response,
 } from '@bitgo/public-types';
 
-export enum MPCv2PartiesEnum {
-  USER = 0,
-  BACKUP = 1,
-  BITGO = 2,
-}
+export { MPCv2PartiesEnum } from '@bitgo/sdk-keys';
 
 export const generateMPCv2KeyRequestBody = t.union([
   MPCv2KeyGenRound1Request,

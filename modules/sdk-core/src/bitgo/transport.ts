@@ -39,10 +39,28 @@ export function transportFromBitGo(bitgo: BitGoBase): WalletTransport {
       if (req.query) {
         call = call.query(req.query) as BitGoRequest;
       }
+      if (req.retries) {
+        call = call.retry(req.retries) as BitGoRequest;
+      }
       if (req.body !== undefined) {
         call = call.send(req.body as string | Record<string, unknown>) as BitGoRequest;
       }
       return call.result();
     },
   };
+}
+
+/** Anything wallet and key code accepts where it needs to talk to BitGo: a client or a bare transport. */
+export type TransportSource = BitGoBase | WalletTransport;
+
+function isWalletTransport(source: TransportSource): source is WalletTransport {
+  return typeof (source as WalletTransport).request === 'function' && typeof (source as BitGoBase).url !== 'function';
+}
+
+/**
+ * Return `source` as a {@link WalletTransport}, adapting a BitGo client with {@link transportFromBitGo}.
+ * Lets functions that used to take `BitGoBase` also accept a transport, without breaking existing callers.
+ */
+export function asTransport(source: TransportSource): WalletTransport {
+  return isWalletTransport(source) ? source : transportFromBitGo(source);
 }
