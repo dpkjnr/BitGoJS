@@ -33,6 +33,24 @@ For more comprehensive information about the BitGo API, including integration gu
 
 You can view examples in the [examples directory](https://github.com/BitGo/BitGoJS/tree/master/examples). You can view integration guides in the [Developer Portal](https://developers.bitgo.com/guides/get-started/intro).
 
+# Loading only the coins you use
+
+`import { BitGo } from 'bitgo'` registers every supported coin, which loads all coin packages at startup.
+If you only need a few coins, import from `bitgo/lean` instead and register the coin packages you depend on:
+
+```ts
+import { BitGo } from 'bitgo/lean';
+import { register as registerSol } from '@bitgo/sdk-coin-sol';
+import { register as registerEth } from '@bitgo/sdk-coin-eth';
+
+const bitgo = new BitGo({ env: 'test' }).use(registerSol, registerEth);
+const sol = bitgo.coin('tsol');
+```
+
+Add each coin package (e.g. `@bitgo/sdk-coin-sol`) to your own dependencies. `bitgo.coin()` throws
+`UnsupportedCoinError` for coins that were not registered on that instance. Coins registered on one `bitgo/lean`
+instance are not visible to other instances.
+
 # Enabling additional debugging output
 
 `bitgo` uses the `debug` package to emit extra information, which can be useful when debugging issues with BitGoJS or BitGo Express.
