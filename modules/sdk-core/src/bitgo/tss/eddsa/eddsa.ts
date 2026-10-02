@@ -2,7 +2,7 @@ import assert from 'assert';
 import openpgp from 'openpgp';
 import sodium from 'libsodium-wrappers-sumo';
 import { Eddsa, GShare, JShare, KeyShare, PShare, RShare, SignShare, YShare } from '@bitgo/sdk-keys';
-import { BitGoBase } from '../../bitgoBase';
+import { TransportSource } from '../../transport';
 import {
   DecryptableYShare,
   CombinedKey,
@@ -189,7 +189,7 @@ export async function createUserToBitGoGShare(
 
 /**
  * Sends the User to Bitgo RShare to Bitgo
- * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {TransportSource} bitgo - the bitgo instance, or a WalletTransport
  * @param {String} walletId - the wallet id
  * @param {String} txRequestId - the txRequest Id
  * @param {SignShare} userSignShare - the user Sign Share
@@ -200,7 +200,7 @@ export async function createUserToBitGoGShare(
  * @param {RequestType} requestType - the request type, defaults to RequestType.tx
  */
 export async function offerUserToBitgoRShare(
-  bitgo: BitGoBase,
+  bitgo: TransportSource,
   walletId: string,
   txRequestId: string,
   userSignShare: SignShare,
@@ -239,7 +239,7 @@ export async function offerUserToBitgoRShare(
 /**
  * Gets the Bitgo to User RShare from Bitgo
  *
- * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {TransportSource} bitgo - the bitgo instance, or a WalletTransport
  * @param {String} walletId - the wallet id
  * @param {String} txRequestId - the txRequest Id
  * @param {IRequestTracer} reqId - the request tracer request id
@@ -247,7 +247,7 @@ export async function offerUserToBitgoRShare(
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function getBitgoToUserRShare(
-  bitgo: BitGoBase,
+  bitgo: TransportSource,
   walletId: string,
   txRequestId: string,
   reqId?: IRequestTracer,
@@ -282,7 +282,7 @@ export async function getBitgoToUserRShare(
 /**
  * Sends the User to Bitgo GShare to Bitgo
  *
- * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {TransportSource} bitgo - the bitgo instance, or a WalletTransport
  * @param {String} walletId - the wallet id
  * @param {String} txRequestId - the txRequest Id
  * @param {GShare} userToBitgoGShare - the User to Bitgo GShare
@@ -292,7 +292,7 @@ export async function getBitgoToUserRShare(
  * @returns {Promise<void>}
  */
 export async function sendUserToBitgoGShare(
-  bitgo: BitGoBase,
+  bitgo: TransportSource,
   walletId: string,
   txRequestId: string,
   userToBitgoGShare: GShare,

@@ -4,6 +4,7 @@ import * as _ from 'lodash';
 import * as common from '../../common';
 import { IBaseCoin, KeychainsTriplet, KeyPair } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
+import { transportFromBitGo, WalletTransport } from '../transport';
 import { IncorrectPasswordError, SafeMpcCeremonyUnsupportedError } from '../errors';
 import {
   decodeEd25519StrKeyPublicKey,
@@ -41,10 +42,23 @@ const BULK_KEY_UPDATE_BATCH_SIZE = 500;
 export class Keychains implements IKeychains {
   private readonly bitgo: BitGoBase;
   private readonly baseCoin: IBaseCoin;
+  /** All HTTP calls go through here. `bitgo` is still used for key encryption and the MPC ceremonies. */
+  private readonly transport: WalletTransport;
 
-  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin) {
+  /**
+   * @param bitgo - client used for key encryption, MPC key generation and, by default, HTTP
+   * @param baseCoin - coin the keychains belong to
+   * @param transport - optional transport for HTTP calls; defaults to `transportFromBitGo(bitgo)`
+   */
+  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, transport: WalletTransport = transportFromBitGo(bitgo)) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
+    this.transport = transport;
+  }
+
+  /** Path of a per-coin API route, e.g. `/tbtc/key`. Same URL as `baseCoin.url(suffix)`. */
+  private coinPath(suffix: string): string {
+    return '/' + this.baseCoin.getChain() + suffix;
   }
 
   /**
@@ -63,10 +77,11 @@ export class Keychains implements IKeychains {
     }
 
     const id = params.id;
-    if (params.reqId) {
-      this.bitgo.setRequestTracer(params.reqId);
-    }
-    return await this.bitgo.get(this.baseCoin.url('/key/' + encodeURIComponent(id))).result();
+    return await this.transport.request({
+      method: 'GET',
+      path: this.coinPath('/key/' + encodeURIComponent(id)),
+      tracer: params.reqId,
+    });
   }
 
   /**
@@ -101,7 +116,7 @@ export class Keychains implements IKeychains {
       queryObject.safeId = params.safeId;
     }
 
-    return this.bitgo.get(this.baseCoin.url('/key')).query(queryObject).result();
+    return this.transport.request({ method: 'GET', path: this.coinPath('/key'), query: queryObject });
   }
 
   /**
@@ -272,7 +287,7 @@ export class Keychains implements IKeychains {
 
       const responses: KeyBulkUpdateResponse[] = [];
       for (const chunk of _.chunk(updates, BULK_KEY_UPDATE_BATCH_SIZE)) {
-        const response = await this.bitgo.put(this.bitgo.url('/key/bulk', 2)).send({ updates: chunk }).result();
+        const response = await this.transport.request({ method: 'PUT', path: '/key/bulk', body: { updates: chunk } });
         // Validate the wire contract instead of trusting whatever shape the transport hands back.
         responses.push(
           decodeOrElse(KeyBulkUpdateResponse.name, KeyBulkUpdateResponse, response, (errors) => {
@@ -412,13 +427,11 @@ export class Keychains implements IKeychains {
       }
     }
 
-    if (params.reqId) {
-      this.bitgo.setRequestTracer(params.reqId);
-    }
-
-    return await this.bitgo
-      .post(this.baseCoin.url('/key'))
-      .send({
+    return await this.transport.request({
+      method: 'POST',
+      path: this.coinPath('/key'),
+      tracer: params.reqId,
+      body: {
         pub: params.pub,
         commonPub: params.commonPub,
         commonKeychain: params.commonKeychain,
@@ -444,8 +457,8 @@ export class Keychains implements IKeychains {
         webauthnDevices: params.webauthnDevices,
         webauthnInfo: params.webauthnInfo,
         safeId: params.safeId,
-      })
-      .result();
+      },
+    });
   }
 
   /**
@@ -524,10 +537,12 @@ export class Keychains implements IKeychains {
       throw new Error('Unsupported multi-sig type');
     }
 
-    const tssSettings: TssSettings = await this.bitgo
-      .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
-      .query({ enterprise: params.enterprise })
-      .result();
+    const tssSettings: TssSettings = await this.transport.request({
+      method: 'GET',
+      service: 'microservice',
+      path: '/api/v2/tss/settings',
+      query: { enterprise: params.enterprise },
+    });
     const multisigTypeVersion =
       tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
 
@@ -583,10 +598,17 @@ export class Keychains implements IKeychains {
     assert(params.encryptedMaterial.encryptedUserKey, new Error('missing required param encryptedUserKey'));
     assert(params.encryptedMaterial.encryptedBackupKey, new Error('missing required param encryptedBackupKey'));
 
-    await this.bitgo.post(this.bitgo.microservicesUrl('/api/v1/user/unlock')).send({ otp: params.otp }).result();
-    const { recoveryInfo } = await this.bitgo
-      .post(this.bitgo.microservicesUrl(`/api/v2/${params.coin}/wallet/${params.walletId}/passcoderecovery`))
-      .result();
+    await this.transport.request({
+      method: 'POST',
+      service: 'microservice',
+      path: '/api/v1/user/unlock',
+      body: { otp: params.otp },
+    });
+    const { recoveryInfo } = await this.transport.request({
+      method: 'POST',
+      service: 'microservice',
+      path: `/api/v2/${params.coin}/wallet/${params.walletId}/passcoderecovery`,
+    });
 
     if (!recoveryInfo || !('passcodeEncryptionCode' in recoveryInfo)) {
       throw new Error('failed to get recovery info');
@@ -800,14 +822,15 @@ export class Keychains implements IKeychains {
       });
     }
 
-    return this.bitgo
-      .put(this.baseCoin.url(`/key/${params.id}`))
-      .send({
+    return this.transport.request({
+      method: 'PUT',
+      path: this.coinPath(`/key/${params.id}`),
+      body: {
         encryptedPrv,
         pub,
         reqId: params.reqId,
-      })
-      .result();
+      },
+    });
   }
 
   /**

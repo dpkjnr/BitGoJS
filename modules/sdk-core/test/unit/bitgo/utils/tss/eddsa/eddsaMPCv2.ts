@@ -1700,8 +1700,12 @@ describe('EddsaMPCv2Utils.signEddsaMPCv2TssUsingExternalSigner', () => {
   };
 
   // Returns a chain compatible with: bitgo.post(url).send(body).result()
+  // Returns a chain compatible with: bitgo.post(url).send(body).result() and, for bodiless posts, bitgo.post(url).result()
   const makePostChain = (response: TxRequest): BitGoRequest<TxRequest> =>
-    ({ send: () => ({ result: sinon.stub().resolves(response) }) } as unknown as BitGoRequest<TxRequest>);
+    ({
+      send: () => ({ result: sinon.stub().resolves(response) }),
+      result: sinon.stub().resolves(response),
+    } as unknown as BitGoRequest<TxRequest>);
 
   // Returns a chain compatible with: bitgo.get(url).query(params).retry(n).result()
   const makeGetChain = (txRequests: TxRequest[]): BitGoRequest<{ txRequests: TxRequest[] }> =>

@@ -2,7 +2,7 @@ import assert from 'assert';
 import openpgp from 'openpgp';
 
 import { MPCv2SigningState } from '@bitgo/public-types';
-import { BitGoBase } from '../bitgoBase';
+import { asTransport, TransportSource } from '../transport';
 import { TxRequestChallengeResponse } from './types';
 import { MPCAlgorithm } from '../baseCoin';
 import {
@@ -43,25 +43,25 @@ export function getBitgoSignatureShare(
 /**
  * Gets the latest Tx Request by id
  *
- * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {TransportSource} bitgo - the bitgo instance, or a WalletTransport
  * @param {String} walletId - the wallet id
  * @param {String} txRequestId - the txRequest id
  * @param {IRequestTracer} reqId - the request tracer request id
  * @returns {Promise<TxRequest>}
  */
 export async function getTxRequest(
-  bitgo: BitGoBase,
+  bitgo: TransportSource,
   walletId: string,
   txRequestId: string,
   reqId?: IRequestTracer
 ): Promise<TxRequest> {
-  const reqTracer = reqId || new RequestTracer();
-  bitgo.setRequestTracer(reqTracer);
-  const txRequestRes = await bitgo
-    .get(bitgo.url('/wallet/' + walletId + '/txrequests', 2))
-    .query({ txRequestIds: txRequestId, latest: 'true' })
-    .retry(3)
-    .result();
+  const txRequestRes = await asTransport(bitgo).request({
+    method: 'GET',
+    path: '/wallet/' + walletId + '/txrequests',
+    query: { txRequestIds: txRequestId, latest: 'true' },
+    retries: 3,
+    tracer: reqId || new RequestTracer(),
+  });
 
   if (txRequestRes.txRequests.length <= 0) {
     throw new Error(`Unable to find TxRequest with id ${txRequestId}`);
@@ -73,7 +73,7 @@ export async function getTxRequest(
 /**
  * Sends a Signature Share
  *
- * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {TransportSource} bitgo - the bitgo instance, or a WalletTransport
  * @param {String} walletId - the wallet id  *
  * @param {String} txRequestId - the txRequest Id
  * @param {SignatureShareRecord} signatureShare - a Signature Share
@@ -85,7 +85,7 @@ export async function getTxRequest(
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function sendSignatureShare(
-  bitgo: BitGoBase,
+  bitgo: TransportSource,
   walletId: string,
   txRequestId: string,
   signatureShare: SignatureShareRecord,
@@ -110,24 +110,24 @@ export async function sendSignatureShare(
       break;
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/signatureshares';
-  const reqTracer = reqId || new RequestTracer();
-  bitgo.setRequestTracer(reqTracer);
   // TODO(WCN-541): add optional attestation pass-through for MPC /signatureshares, first round
   // only (deferred until multisig attestation, WCN-539, is verified end-to-end on staging).
-  return bitgo
-    .post(bitgo.url(urlPath, 2))
-    .send({
+  return asTransport(bitgo).request({
+    method: 'POST',
+    path: urlPath,
+    body: {
       signatureShare,
       signerShare,
       userPublicGpgKey,
-    })
-    .result();
+    },
+    tracer: reqId || new RequestTracer(),
+  });
 }
 
 /**
  * Sends a Signature Share using the sign txRequest route
  *
- * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {TransportSource} bitgo - the bitgo instance, or a WalletTransport
  * @param {String} walletId - the wallet id  *
  * @param {String} txRequestId - the txRequest Id
  * @param signatureShares
@@ -140,7 +140,7 @@ export async function sendSignatureShare(
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function sendSignatureShareV2(
-  bitgo: BitGoBase,
+  bitgo: TransportSource,
   walletId: string,
   txRequestId: string,
   signatureShares: SignatureShareRecord[],
@@ -169,15 +169,15 @@ export async function sendSignatureShareV2(
     signerShare,
     signerGpgPublicKey,
   };
-  const reqTracer = reqId || new RequestTracer();
-  bitgo.setRequestTracer(reqTracer);
+  const transport = asTransport(bitgo);
+  const request = { method: 'POST', path: urlPath, body: requestBody, tracer: reqId || new RequestTracer() } as const;
 
   let attempts = 0;
   const maxAttempts = 3;
 
   while (attempts < maxAttempts) {
     try {
-      return await bitgo.post(bitgo.url(urlPath, 2)).send(requestBody).result();
+      return await transport.request<TxRequest>(request);
     } catch (err) {
       if (err?.status === 429) {
         const sleepTime = 1000 * (attempts + 1);
@@ -190,13 +190,13 @@ export async function sendSignatureShareV2(
       }
     }
   }
-  return await bitgo.post(bitgo.url(urlPath, 2)).send(requestBody).result();
+  return await transport.request<TxRequest>(request);
 }
 
 /**
  * Sends a Transaction Request for broadcast once signing is complete
  *
- * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {TransportSource} bitgo - the bitgo instance, or a WalletTransport
  * @param {String} walletId - the wallet id  *
  * @param {String} txRequestId - the txRequest Id
  * @param requestType - The type of request being submitted (either tx or message for signing)
@@ -204,7 +204,7 @@ export async function sendSignatureShareV2(
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function sendTxRequest(
-  bitgo: BitGoBase,
+  bitgo: TransportSource,
   walletId: string,
   txRequestId: string,
   requestType: RequestType,
@@ -212,14 +212,12 @@ export async function sendTxRequest(
 ): Promise<TxRequest> {
   const addendum = requestType === RequestType.tx ? '/transactions/0' : '/messages/0';
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/send';
-  const reqTracer = reqId || new RequestTracer();
-  bitgo.setRequestTracer(reqTracer);
-  return bitgo.post(bitgo.url(urlPath, 2)).send().result();
+  return asTransport(bitgo).request({ method: 'POST', path: urlPath, tracer: reqId || new RequestTracer() });
 }
 
 /**
  * Sends the client commitment and encrypted signer share to the server, getting back the server commitment
- * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {TransportSource} bitgo - the bitgo instance, or a WalletTransport
  * @param {string} walletId - the wallet id
  * @param {string} txRequestId - the txRequest Id
  * @param {CommitmentShareRecord} commitmentShare - the client commitment share
@@ -229,7 +227,7 @@ export async function sendTxRequest(
  * @returns {Promise<ExchangeCommitmentResponse>} - the server commitment share
  */
 export async function exchangeEddsaCommitments(
-  bitgo: BitGoBase,
+  bitgo: TransportSource,
   walletId: string,
   txRequestId: string,
   commitmentShare: CommitmentShareRecord,
@@ -242,9 +240,12 @@ export async function exchangeEddsaCommitments(
     addendum = '/transactions/0';
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/commit';
-  const reqTracer = reqId || new RequestTracer();
-  bitgo.setRequestTracer(reqTracer);
-  return await bitgo.post(bitgo.url(urlPath, 2)).send({ commitmentShare, encryptedSignerShare }).result();
+  return await asTransport(bitgo).request({
+    method: 'POST',
+    path: urlPath,
+    body: { commitmentShare, encryptedSignerShare },
+    tracer: reqId || new RequestTracer(),
+  });
 }
 
 /**
@@ -305,7 +306,7 @@ export async function commonVerifyWalletSignature(params: {
  * @param reqId
  */
 export async function getTxRequestChallenge(
-  bitgo: BitGoBase,
+  bitgo: TransportSource,
   walletId: string,
   txRequestId: string,
   index: string,
@@ -323,7 +324,10 @@ export async function getTxRequestChallenge(
       break;
   }
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/challenge';
-  const reqTracer = reqId || new RequestTracer();
-  bitgo.setRequestTracer(reqTracer);
-  return await bitgo.post(bitgo.url(urlPath, 2)).send({ paillierModulus }).result();
+  return await asTransport(bitgo).request({
+    method: 'POST',
+    path: urlPath,
+    body: { paillierModulus },
+    tracer: reqId || new RequestTracer(),
+  });
 }

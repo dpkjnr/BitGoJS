@@ -29,6 +29,8 @@ export interface TransportRequest {
   body?: unknown;
   /** Request tracer for this call. */
   tracer?: TransportTracer;
+  /** Number of times the transport may retry the request on network errors and 5xx responses. Default 0. */
+  retries?: number;
 }
 
 /**

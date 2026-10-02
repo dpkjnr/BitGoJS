@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@bitgo/argon2": "^1.1.1",
+    "@bitgo/public-types": "6.79.0",
     "@bitgo/sdk-lib-mpc": "^11.1.0",
     "@bitgo/secp256k1": "^1.11.1",
     "@bitgo/sjcl": "^1.1.0",
@@ -40,6 +41,7 @@
     "bigint-crypto-utils": "3.1.4",
     "fp-ts": "^2.12.2",
     "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
+    "openpgp": "5.11.3",
     "paillier-bigint": "3.3.0",
     "secp256k1": "5.0.1"
   },

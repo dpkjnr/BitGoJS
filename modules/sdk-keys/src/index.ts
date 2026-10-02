@@ -9,6 +9,8 @@ export * from './codecs';
 export * from './ecdh';
 export * from './encryption';
 export * from './mpc';
+export * from './keychain';
+export * from './tss';
 // EdDSA share types, flattened for convenience. `KeyShare` is already exported by './mpc'.
 export {
   GShare,

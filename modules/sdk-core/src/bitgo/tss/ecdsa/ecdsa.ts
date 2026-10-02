@@ -24,7 +24,7 @@ import {
 } from './types';
 import { createShareProof, RequestType, SignatureShareRecord, SignatureShareType } from '../../utils';
 import { ShareKeyPosition } from '../types';
-import { BitGoBase } from '../../bitgoBase';
+import { TransportSource } from '../../transport';
 import { commonVerifyWalletSignature, getTxRequest, sendSignatureShare } from '../common';
 import createKeccakHash from 'keccak';
 import assert from 'assert';
@@ -188,7 +188,7 @@ export type MuDShare = { muShare: MUShare; dShare: DShare; i: ShareKeyPosition }
 
 /**
  * Sends Share To Bitgo
- * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {TransportSource} bitgo - the bitgo instance, or a WalletTransport
  * @param {String} walletId - the wallet id  *
  * @param {String} txRequestId - the txRequest Id
  * @param requestType - the type of request being submitted (either tx or message for signing)
@@ -203,7 +203,7 @@ export type MuDShare = { muShare: MUShare; dShare: DShare; i: ShareKeyPosition }
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function sendShareToBitgo(
-  bitgo: BitGoBase,
+  bitgo: TransportSource,
   walletId: string,
   txRequestId: string,
   requestType: RequestType,
@@ -307,7 +307,7 @@ export async function sendShareToBitgo(
 
 /**
  * Gets the latest user's share from bitgo needed to continue signing flow
- * @param {BitGoBase} bitgo - the bitgo instance
+ * @param {TransportSource} bitgo - the bitgo instance, or a WalletTransport
  * @param {String} walletId - the wallet id  *
  * @param {String} txRequestId - the txRequest Id
  * @param {ReceivedShareType} shareType - the excpected share type
@@ -315,7 +315,7 @@ export async function sendShareToBitgo(
  * @returns {Promise<SendShareToBitgoRT>} - share from bitgo to user
  */
 export async function getBitgoToUserLatestShare(
-  bitgo: BitGoBase,
+  bitgo: TransportSource,
   walletId: string,
   txRequestId: string,
   shareType: ReceivedShareType,
