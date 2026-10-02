@@ -18,7 +18,7 @@ import {
   verifyPeerMessageRoundTwo,
   verifyPeerMessageRoundThree,
 } from '../../../../../src/bitgo/tss/redpallas/redpallasMPCv2';
-import { decodeWithCodec } from '../../../../../src/bitgo/utils/codecs';
+import { decodeWithCodec } from '@bitgo/sdk-keys';
 import { generateGPGKeyPair } from '../../../../../src/bitgo/utils/opengpgUtils';
 import { MPCv2PartiesEnum } from '../../../../../src/bitgo/utils/tss/ecdsa/typesMPCv2';
 

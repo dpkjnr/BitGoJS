@@ -7,20 +7,14 @@
     "esModuleInterop": true,
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
-  "include": ["src/**/*", "test/**/*", "test/unit/bitgo/safe/fixtures/derivableEd25519Pub.json"],
+  "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules"],
   "references": [
     {
-      "path": "../sdk-keys"
+      "path": "../sdk-lib-mpc"
     },
     {
-      "path": "../sdk-lib-safes"
-    },
-    {
-      "path": "../statics"
-    },
-    {
-      "path": "../utxo-lib"
+      "path": "../secp256k1"
     }
   ]
 }

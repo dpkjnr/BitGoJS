@@ -1,4 +1,4 @@
-import { base64String, boundedInt, decodeWithCodec } from '@bitgo/sdk-core';
+import { base64String, boundedInt, decodeWithCodec } from '../codecs';
 import { createDecipheriv, pbkdf2 } from 'crypto';
 import * as t from 'io-ts';
 import { promisify } from 'util';

@@ -3,13 +3,13 @@ import * as tss from './tss';
 
 export * as walletUtil from './walletUtil';
 export * from './baseCoin';
-export * from './bip32util';
+export { signMessage, verifyMessage } from '@bitgo/sdk-keys';
 export * from './bitcoin';
 export * from './bitgoBase';
 export * from './config';
 export * from './coinFactory';
 export * from './defi';
-export * from './ecdh';
+export { getSharedSecret, signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '@bitgo/sdk-keys';
 export * from './enterprise';
 export * from './environments';
 export * from './errors';

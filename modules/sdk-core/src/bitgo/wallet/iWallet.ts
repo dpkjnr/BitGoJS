@@ -38,7 +38,7 @@ import {
   TokenTransferRecipientParams,
   TxRequest,
 } from '../utils';
-import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
+import { ECDSA } from '@bitgo/sdk-keys';
 import { AttestationPayload } from './BuildParams';
 import { IAddressBook } from '../address-book';
 import { WalletUser, AddressQueryResult } from '@bitgo/public-types';
@@ -1231,8 +1231,8 @@ export interface ChallengeVerifiers {
   };
 }
 export interface WalletEcdsaChallenges {
-  enterpriseChallenge: SerializedNtilde & ChallengeVerifiers;
-  bitgoChallenge: SerializedNtilde & ChallengeVerifiers;
+  enterpriseChallenge: ECDSA.SerializedNtilde & ChallengeVerifiers;
+  bitgoChallenge: ECDSA.SerializedNtilde & ChallengeVerifiers;
   createdBy: string;
 }
 

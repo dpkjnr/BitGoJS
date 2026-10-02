@@ -42,7 +42,7 @@ import {
   TxRequest,
   TxRequestVersion,
 } from './baseTypes';
-import { GShare, SignShare } from '../../../account-lib/mpc/tss';
+import { GShare, SignShare } from '@bitgo/sdk-keys';
 import { RequestTracer } from '../util';
 import { envRequiresBitgoPubGpgKeyConfig, getBitgoMpcGpgPubKey } from '../../tss/bitgoPubKeys';
 import { getBitgoGpgPubKey } from '../opengpgUtils';

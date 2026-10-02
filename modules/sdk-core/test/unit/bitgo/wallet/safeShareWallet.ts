@@ -15,7 +15,7 @@ import {
   deriveSafeChildHardenedFromXprv,
 } from '../../../../src';
 import { BaseCoin } from '../../../../src/bitgo/baseCoin';
-import { getSharedSecret } from '../../../../src/bitgo/ecdh';
+import { getSharedSecret } from '@bitgo/sdk-keys';
 import { makeRandomKey } from '../../../../src/bitgo/bitcoin';
 
 require('should-sinon');

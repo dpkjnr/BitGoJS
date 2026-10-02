@@ -1,5 +1,5 @@
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
-import { Ecdsa } from '../../../account-lib/mpc';
+import { Ecdsa } from '@bitgo/sdk-keys';
 import { TssVerifyAddressOptions } from '../../baseCoin/iBaseCoin';
 import { InvalidAddressError } from '../../errors';
 import { EDDSAMethods } from '../../tss';

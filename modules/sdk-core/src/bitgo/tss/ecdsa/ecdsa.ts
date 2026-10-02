@@ -1,4 +1,4 @@
-import { Ecdsa } from './../../../account-lib/mpc/tss';
+import { Ecdsa, ECDSA } from '@bitgo/sdk-keys';
 import {
   AShare,
   BShare,
@@ -25,14 +25,6 @@ import {
 import { createShareProof, RequestType, SignatureShareRecord, SignatureShareType } from '../../utils';
 import { ShareKeyPosition } from '../types';
 import { BitGoBase } from '../../bitgoBase';
-import {
-  KShare,
-  MUShare,
-  RangeProofShare,
-  RangeProofWithCheckShare,
-  SignConvertStep2Response,
-  SShare,
-} from '../../../account-lib/mpc/tss/ecdsa/types';
 import { commonVerifyWalletSignature, getTxRequest, sendSignatureShare } from '../common';
 import createKeccakHash from 'keccak';
 import assert from 'assert';
@@ -43,6 +35,13 @@ import { ApiKeyShare } from '../../keychain';
 import { Hash } from 'crypto';
 import { EcdsaPaillierProof } from '@bitgo/sdk-lib-mpc';
 import { IRequestTracer } from '../../../api';
+
+type KShare = ECDSA.KShare;
+type MUShare = ECDSA.MUShare;
+type RangeProofShare = ECDSA.RangeProofShare;
+type RangeProofWithCheckShare = ECDSA.RangeProofWithCheckShare;
+type SignConvertStep2Response = ECDSA.SignConvertStep2Response;
+type SShare = ECDSA.SShare;
 
 const MPC = new Ecdsa();
 

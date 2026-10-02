@@ -16,6 +16,9 @@
       "path": "../sdk-hmac"
     },
     {
+      "path": "../sdk-keys"
+    },
+    {
       "path": "../utxo-lib"
     },
     {

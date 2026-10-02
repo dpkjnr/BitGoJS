@@ -13,7 +13,7 @@ import { decode } from 'cbor-x';
 import * as t from 'io-ts';
 
 import { EddsaMPCv2Utils, BitGoBase, IBaseCoin, Keychain } from '../../../../../../src';
-import { decodeWithCodec } from '../../../../../../src/bitgo/utils/codecs';
+import { decodeWithCodec } from '@bitgo/sdk-keys';
 import { buildSafeMpcKeyEnvelopes } from '../../../../../../src/bitgo/utils/tss/keyShareEnvelope';
 import {
   EddsaVrfMPCv2Utils,

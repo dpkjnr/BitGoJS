@@ -1,7 +1,7 @@
 import 'should';
 import sinon from 'sinon';
 import { DklsUtils, DklsTypes } from '@bitgo/sdk-lib-mpc';
-import { combineRound4DklsDsgMessages } from '../../../../src/account-lib/mpc/util';
+import { combineRound4DklsDsgMessages } from '../../../src/mpc/util';
 
 function makeMsg(from: number, rHex?: string): DklsTypes.SerializedBroadcastMessage {
   return {

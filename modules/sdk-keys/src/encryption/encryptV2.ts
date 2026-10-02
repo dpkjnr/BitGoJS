@@ -1,5 +1,5 @@
 import { argon2id } from '@bitgo/argon2';
-import { base64String, boundedInt, decodeWithCodec } from '@bitgo/sdk-core';
+import { base64String, boundedInt, decodeWithCodec } from '../codecs';
 import { randomBytes, webcrypto } from 'crypto';
 import * as t from 'io-ts';
 
