@@ -23,6 +23,8 @@ import {
 } from '../baseCoin';
 import { makeRandomKey } from '../bitcoin';
 import { BitGoBase } from '../bitgoBase';
+import { CoreWallet } from '@bitgo/sdk-wallet';
+import { transportFromBitGo } from '../transport';
 import { decodeWithCodec, getSharedSecret } from '@bitgo/sdk-keys';
 import {
   AddressGenerationError,
@@ -137,13 +139,11 @@ import {
   UpdateWalletOptions,
   UpgradeEncryptionOptions,
   UpgradeEncryptionResult,
-  WalletCoinSpecific,
   WalletData,
   WalletEcdsaChallenges,
   WalletSignMessageOptions,
   WalletSignTransactionOptions,
   WalletSignTypedDataOptions,
-  WalletType,
   BuildTokenApprovalResponse,
   WalletInitResult,
   GetAccountResourcesOptions,
@@ -236,10 +236,13 @@ function validateDownloadKeycardParams(params: DownloadKeycardOptions = {}) {
   };
 }
 
-export class Wallet implements IWallet {
+/**
+ * The full BitGo wallet. Reading wallet data and refresh come from {@link CoreWallet} in
+ * `@bitgo/sdk-wallet`; the create/sign/send methods here override the core ones with the
+ * complete sdk-core behaviour (TSS, external signers, safes, custodial flows).
+ */
+export class Wallet extends CoreWallet<WalletData, IBaseCoin> implements IWallet {
   public readonly bitgo: BitGoBase;
-  public readonly baseCoin: IBaseCoin;
-  public _wallet: WalletData;
   private _defi?: DefiVault;
   private readonly tssUtils:
     | EcdsaUtils
@@ -253,9 +256,17 @@ export class Wallet implements IWallet {
   private validatedSafeRootKeychain?: KeychainWithEncryptedPrv;
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, walletData: any) {
+    // Wrap the client rather than storing it in `context`: error paths log and attach `{ ...wallet }`
+    // with `bitgo._token` stripped, and a second reference to the client would carry the token.
+    super(
+      {
+        transport: transportFromBitGo(bitgo),
+        coin: baseCoin,
+        keyDecrypter: { decrypt: (params) => bitgo.decrypt(params) },
+      },
+      walletData
+    );
     this.bitgo = bitgo;
-    this.baseCoin = baseCoin;
-    this._wallet = walletData;
     const userId = _.get(bitgo, '_user.id');
     if (_.isString(userId)) {
       const userDetails = _.find(walletData.users, { user: userId });
@@ -293,13 +304,6 @@ export class Wallet implements IWallet {
    */
   url(extra = ''): string {
     return this.baseCoin.url('/wallet/' + this.id() + extra);
-  }
-
-  /**
-   * Get this wallet's id
-   */
-  id(): string {
-    return this._wallet.id;
   }
 
   /**
@@ -355,52 +359,6 @@ export class Wallet implements IWallet {
   }
 
   /**
-   * Get a string representation of the balance of this wallet
-   *
-   * This is useful when balances have the potential to overflow standard javascript numbers
-   */
-  balanceString(): string {
-    return this._wallet.balanceString;
-  }
-
-  /**
-   * Get a string representation of the confirmed balance of this wallet
-   *
-   * This is useful when balances have the potential to overflow standard javascript numbers
-   */
-  confirmedBalanceString(): string {
-    return this._wallet.confirmedBalanceString;
-  }
-
-  /**
-   * Get a string representation of the spendable balance of this wallet
-   *
-   * This is useful when balances have the potential to overflow standard javascript numbers
-   */
-  spendableBalanceString(): string {
-    return this._wallet.spendableBalanceString;
-  }
-
-  /**
-   * Get the coin identifier for the type of coin this wallet holds
-   */
-  coin(): string {
-    return this._wallet.coin;
-  }
-
-  type(): WalletType {
-    return this._wallet.type || 'hot';
-  }
-
-  multisigType(): 'onchain' | 'tss' {
-    return this._wallet.multisigType;
-  }
-
-  multisigTypeVersion(): 'MPCv2' | undefined {
-    return this._wallet.multisigTypeVersion;
-  }
-
-  /**
    * Public id of the parent safe, if this wallet was minted in one.
    * @experimental
    */
@@ -412,33 +370,12 @@ export class Wallet implements IWallet {
     return this._wallet.subType;
   }
 
-  /**
-   * Get the label (name) for this wallet
-   */
-  public label(): string {
-    return this._wallet.label;
-  }
-
   public flags(): { name: string; value: string }[] {
     return this._wallet.walletFlags ?? [];
   }
 
   public flag(name: string): string | undefined {
     return this.flags().find((flag) => flag.name === name)?.value;
-  }
-
-  /**
-   * Get the public object ids for the keychains on this wallet.
-   */
-  public keyIds(): string[] {
-    return this._wallet.keys;
-  }
-
-  /**
-   * Get a receive address for this wallet
-   */
-  public receiveAddress(): string | undefined {
-    return this._wallet.receiveAddress?.address;
   }
 
   /**
@@ -463,29 +400,12 @@ export class Wallet implements IWallet {
   }
 
   /**
-   * Get wallet properties which are specific to certain coin implementations
-   */
-  coinSpecific(): WalletCoinSpecific | undefined {
-    return this._wallet.coinSpecific;
-  }
-
-  /**
    * Get all pending approvals on this wallet
    */
   pendingApprovals(): IPendingApproval[] {
     return this._wallet.pendingApprovals.map((currentApproval) => {
       return new PendingApproval(this.bitgo, this.baseCoin, currentApproval, this);
     });
-  }
-
-  /**
-   * Refresh the wallet object by syncing with the back-end
-   * @param params
-   * @returns {Wallet}
-   */
-  async refresh(params: Record<string, never> = {}): Promise<Wallet> {
-    this._wallet = await this.bitgo.get(this.url()).result();
-    return this;
   }
 
   /**
@@ -2507,8 +2427,7 @@ export class Wallet implements IWallet {
     }
 
     if (this.baseCoin.getFamily() === 'ofc') {
-      const userKeySigningRequired = this.toTradingAccount().userKeySigningRequired;
-      const prv = userKeySigningRequired ? await this.getUserPrv(presign as GetUserPrvOptions) : undefined;
+      const prv = this.userKeySigningRequired() ? await this.getUserPrv(presign as GetUserPrvOptions) : undefined;
       return this.baseCoin.signTransaction({
         ...signTransactionParams,
         prv,
@@ -3398,13 +3317,6 @@ export class Wallet implements IWallet {
   fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]> {
     const query = _.pick(params, ['sourceChain']);
     return this.bitgo.get(this.url('/crossChainUnspents')).query(query).result();
-  }
-
-  /**
-   * Extract a JSON representable version of this wallet
-   */
-  toJSON(): WalletData {
-    return this._wallet;
   }
 
   /**

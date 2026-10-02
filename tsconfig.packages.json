@@ -296,6 +296,9 @@
       "path": "./modules/sdk-transport"
     },
     {
+      "path": "./modules/sdk-wallet"
+    },
+    {
       "path": "./modules/sdk-lib-safes"
     },
     {
