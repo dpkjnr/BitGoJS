@@ -6,6 +6,14 @@ import * as NEA from 'fp-ts/ReadonlyNonEmptyArray';
 import * as t from 'io-ts';
 
 /**
+ * An intersection validates its input once per member and records the member index as the context key. That index
+ * says which member failed, not where the value sits, so it is left out of the reported path.
+ */
+function isPathSegment(entry: t.ContextEntry, i: number, context: t.Context): boolean {
+  return !(i > 0 && (context[i - 1].type as { _tag?: string })._tag === 'IntersectionType');
+}
+
+/**
  * Format an `Errors` object as a human-readable `string`. See `decode` in `decode.ts` for an example.
  * Inspired by
  * https://github.com/mmkal/ts/blob/94a9ba8f2931c9c91122d00b0bf1bd21b2be05cd/packages/io-ts-extra/src/reporters.ts#L11.
@@ -20,7 +28,12 @@ export const validationErrors =
           O.map((context) => {
             const name = typeAlias || NEA.head(context).type.name;
             const lastType = NEA.last(context).type.name;
-            const path = name + error.context.map((c) => c.key).join('.');
+            const path =
+              name +
+              error.context
+                .filter(isPathSegment)
+                .map((c) => c.key)
+                .join('.');
             return pipe(
               Json.stringify(error.value),
               E.getOrElse(() => error.value),
