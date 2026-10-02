@@ -39,12 +39,14 @@ describe('Wallets - WebAuthn wallet creation', function () {
           async ({ password, input }: { password: string; input: string }) => `encrypted:${password}:${input}`
         ),
       setRequestTracer: sinon.stub(),
+      url: sinon.stub().callsFake((path: string, version = 1) => `/api/v${version}${path}`),
     };
 
     mockBaseCoin = {
       isEVM: sinon.stub().returns(false),
       supportsTss: sinon.stub().returns(false),
       getFamily: sinon.stub().returns('btc'),
+      getChain: sinon.stub().returns('tbtc'),
       getDefaultMultisigType: sinon.stub().returns('onchain'),
       keychains: sinon.stub().returns(mockKeychains),
       url: sinon.stub().returns('/test/url'),

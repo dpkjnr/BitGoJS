@@ -28,6 +28,7 @@ export { sendSignatureShare } from './tss';
 export * from './types';
 export * from './utils';
 export * from './safe';
+export * from './transport';
 export * from './wallet';
 export * from './webauthn';
 export * from './webhook';
